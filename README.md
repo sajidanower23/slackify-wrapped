@@ -22,3 +22,11 @@ Simply run the following command to install dependencies and run the server:
 ```bash
 cargo run
 ```
+
+### Run the tests
+
+Running tests is as simple as:
+
+```bash
+cargo test
+```
