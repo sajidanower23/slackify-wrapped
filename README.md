@@ -6,3 +6,19 @@ Your year in Slack - wrapped!
 
 This builds an executable, `slackify-wrapped` that serves an API using Rocket.
 
+
+## Setup
+
+### Install rust
+
+If you haven't already, install rust using [rustup](https://rustup.rs/).
+
+This should also install the `cargo` command.
+
+### Run the server
+
+Simply run the following command to install dependencies and run the server:
+
+```bash
+cargo run
+```
