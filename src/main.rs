@@ -1,4 +1,5 @@
 #[macro_use] extern crate rocket;
+#[cfg(test)] mod tests;
 
 #[get("/health")]
 fn health() -> &'static str {
