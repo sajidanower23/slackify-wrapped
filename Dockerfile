@@ -16,6 +16,6 @@ FROM ubuntu:18.04
 # Copy the compiled service binary
 COPY --from=build /src/slackify-wrapped/target/release/slackify-wrapped /usr/local/bin/slackify-wrapped
 
-# Start the helloworld service on container boot
+# Start the service on container boot
 CMD ["usr/local/bin/slackify-wrapped"]
 
