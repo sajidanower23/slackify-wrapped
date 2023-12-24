@@ -1,27 +1,17 @@
 use rocket::get;
 use rocket::Route;
-use reqwest;
+use std::env;
+use crate::api::slack::SlackClient;
 use rocket;
-
-const TOKEN: &str = "";
 
 #[get("/emoji-contributor")]
 pub async fn emoji_contributor_route() -> &'static str {
-    let token = TOKEN;
-    let client = reqwest::Client::new();
-    let url = "https://slack.com/api/emoji.list";
-    let _response =  match client.get(url).header("Authorization", format!("Bearer {}", token))
-                    .send()
-                    .await {
-                        Ok(resp) => {
-                            println!("Response: {:?}", resp);
-                            resp
-                        },
-                        Err(e) => {
-                            println!("Error: {}", e);
-                            return "Error";
-                        }
-                    };
+    let token = env::var("SLACK_TOKEN").expect("Please set SLACK_TOKEN");
+    let slack_client = SlackClient::new(&token);
+    let emoji_list_response = slack_client.get_emoji_list().await.unwrap();
+    let emoji_list = emoji_list_response.emoji;
+    let emoji_list_keys = emoji_list.keys();
+    print!("{:?}", emoji_list_keys);
     return "Emoji Contributor"
 }
 

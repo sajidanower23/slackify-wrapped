@@ -1,6 +1,7 @@
 #[macro_use] extern crate rocket;
 #[cfg(test)] mod tests;
 
+pub mod api;
 mod features {
     pub mod emoji_contributor;
 }
