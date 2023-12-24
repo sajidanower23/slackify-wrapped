@@ -1,7 +1,7 @@
 use rocket::get;
 use rocket::Route;
 use std::env;
-use crate::slack::slack::SlackClient;
+use crate::slack::slack_client::SlackClient;
 use rocket;
 
 #[get("/emoji-contributor")]

@@ -2,6 +2,7 @@
 #[cfg(test)] mod tests;
 
 pub mod slack;
+
 mod features {
     pub mod emoji_contributor;
 }
