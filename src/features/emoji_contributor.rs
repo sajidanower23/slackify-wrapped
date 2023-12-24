@@ -12,7 +12,7 @@ pub async fn emoji_contributor_route() -> &'static str {
     let emoji_list = emoji_list_response.emoji;
     let emoji_list_keys = emoji_list.keys();
     print!("{:?}", emoji_list_keys);
-    return "Emoji Contributor"
+    return "Emoji Contributor - not implemented yet"
 }
 
 pub fn routes() -> Vec<Route> {
