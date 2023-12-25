@@ -5,7 +5,7 @@ use reqwest::Url;
 use reqwest::Error;
 
 pub struct EmojiListParams {
-    pub pretty: u8,
+    pub pretty: i8,
     pub include_categories: bool,
 }
 
