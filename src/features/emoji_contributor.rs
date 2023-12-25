@@ -1,8 +1,8 @@
+use crate::slack::client::SlackClient;
+use crate::slack::emoji::{EmojiListParams, EmojiListResponse::Error, EmojiListResponse::Success};
 use rocket;
 use rocket::{get, Route};
 use std::env;
-use crate::slack::client::SlackClient;
-use crate::slack::emoji::EmojiListParams;
 
 #[get("/emoji-contributor")]
 pub async fn emoji_contributor_route() -> &'static str {

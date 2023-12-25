@@ -1,5 +1,7 @@
-#[macro_use] extern crate rocket;
-#[cfg(test)] mod tests;
+#[macro_use]
+extern crate rocket;
+#[cfg(test)]
+mod tests;
 
 pub mod slack;
 
