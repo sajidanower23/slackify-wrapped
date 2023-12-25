@@ -38,8 +38,7 @@ impl EmojiAPI {
             .send()
             .await?;
 
-        let resp = response.error_for_status();
-        return match resp {
+        return match response.error_for_status() {
             Ok(response) => response.json::<EmojiListResponse>().await,
             Err(error) => Err(error),
         };
