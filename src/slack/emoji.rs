@@ -1,11 +1,12 @@
-use std::collections::HashMap;
-use serde::Deserialize;
 use reqwest::Client;
-use reqwest::Url;
 use reqwest::Error;
+use reqwest::Url;
+use serde::Deserialize;
+use serde_json::Value;
+use std::collections::HashMap;
 
 pub struct EmojiListParams {
-    pub pretty: u8,
+    pub pretty: i8,
     pub include_categories: bool,
 }
 
@@ -24,22 +25,28 @@ pub struct EmojiAPI {
 }
 
 impl EmojiAPI {
-    pub async fn list (&self, params: Option<EmojiListParams>) -> Result<EmojiListResponse, Error> {
+    pub async fn list(&self, params: Option<EmojiListParams>) -> Result<EmojiListResponse, Error> {
         const URL: &str = "https://slack.com/api/emoji.list";
-        let mut url = Url::parse(URL).unwrap();
+        let mut url = Url::parse(URL).expect("Unable to parse URL");
         let params = params.unwrap_or(EmojiListParams::new_default());
         url.query_pairs_mut()
             .append_pair("pretty", &params.pretty.to_string())
             .append_pair("include_categories", &params.include_categories.to_string());
 
-        let response = self.client
+        let response = self
+            .client
             .get(url.as_ref())
             .header("Authorization", format!("Bearer {}", self.token))
             .send()
             .await?;
 
         return match response.error_for_status() {
-            Ok(response) => response.json::<EmojiListResponse>().await,
+            Ok(response) => response.json::<Value>().await.map(|value| {
+                match value.get("ok").unwrap().as_bool().unwrap() {
+                    true => EmojiListResponse::Success(serde_json::from_value(value).unwrap()),
+                    false => EmojiListResponse::Error(serde_json::from_value(value).unwrap()),
+                }
+            }),
             Err(error) => Err(error),
         };
     }
@@ -48,8 +55,19 @@ impl EmojiAPI {
 type EmojiName = String;
 type EmojiUrl = String;
 
+pub enum EmojiListResponse {
+    Success(EmojiListSuccess),
+    Error(EmojiListError),
+}
+
 #[derive(Deserialize)]
-pub struct EmojiListResponse {
+pub struct EmojiListError {
+    pub ok: bool,
+    pub error: String,
+}
+
+#[derive(Deserialize)]
+pub struct EmojiListSuccess {
     pub ok: bool,
     pub emoji: HashMap<EmojiName, EmojiUrl>,
     pub cache_ts: String,

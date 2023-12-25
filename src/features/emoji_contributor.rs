@@ -1,8 +1,8 @@
+use crate::slack::client::SlackClient;
+use crate::slack::emoji::{EmojiListParams, EmojiListResponse::Error, EmojiListResponse::Success};
 use rocket;
 use rocket::{get, Route};
 use std::env;
-use crate::slack::client::SlackClient;
-use crate::slack::emoji::EmojiListParams;
 
 #[get("/emoji-contributor")]
 pub async fn emoji_contributor_route() -> &'static str {
@@ -14,20 +14,22 @@ pub async fn emoji_contributor_route() -> &'static str {
     });
     let emoji_list_response = slack_client.emoji().list(params).await;
     match emoji_list_response {
-        Ok(emoji_list_response) => {
-            let emoji_list = emoji_list_response.emoji;
-            let emoji_list_keys = emoji_list.keys();
-            println!("{:?}", emoji_list_keys);
-            if !emoji_list_response.ok {
+        Ok(emoji_list_response) => match emoji_list_response {
+            Success(emoji_list_response) => {
+                let emoji_list = emoji_list_response.emoji;
+                let emoji_list_keys = emoji_list.keys();
+                println!("{:?}", emoji_list_keys);
+                return "Emoji Contributor - success";
+            }
+            Error(emoji_list_response) => {
+                println!("Error: {:?}", emoji_list_response.error);
                 return "Emoji Contributor - encountered error";
-            } else {
-                return "Emoji Contributor - not implemented yet";
             }
         },
         Err(error) => {
             println!("Encountered error: {:?}", error);
             return "Could not get emoji list";
-        },
+        }
     }
 }
 
