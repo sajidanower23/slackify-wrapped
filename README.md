@@ -1,6 +1,6 @@
 # Slackify Wrapped
 
-----
+![Build status](https://github.com/sajidanower23/slackify-wrapped/actions/workflows/build_and_test.yml/badge.svg)
 
 Your year in Slack - wrapped!
 
