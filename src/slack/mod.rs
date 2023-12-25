@@ -1,1 +1,2 @@
-pub mod slack_client;
+pub mod client;
+pub mod emoji;

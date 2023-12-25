@@ -1,21 +1,8 @@
-use std::collections::HashMap;
-use reqwest::Error;
-use serde::Deserialize;
-
-
-type EmojiName = String;
-type EmojiUrl = String;
-
-#[derive(Deserialize)]
-pub struct EmojiListResponse {
-    pub ok: bool,
-    pub emoji: HashMap<EmojiName, EmojiUrl>,
-    pub cache_ts: String,
-}
+use super::emoji::EmojiAPI;
 
 pub struct SlackClient {
-    token: String,
-    client: reqwest::Client,
+    pub token: String,
+    pub client: reqwest::Client,
 }
 
 impl SlackClient {
@@ -26,15 +13,10 @@ impl SlackClient {
         }
     }
 
-    pub async fn get_emoji_list(&self) -> Result<EmojiListResponse, Error> {
-        let url = "https://slack.com/api/emoji.list";
-        let response = self
-            .client
-            .get(url)
-            .header("Authorization", format!("Bearer {}", self.token))
-            .send()
-            .await?;
-        let emoji_list_response = response.json::<EmojiListResponse>().await?;
-        Ok(emoji_list_response)
+    pub fn emoji(&self) -> EmojiAPI {
+        EmojiAPI {
+            client: self.client.clone(),
+            token: self.token.clone(),
+        }
     }
 }
