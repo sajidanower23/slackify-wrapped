@@ -57,11 +57,11 @@ type EmojiUrl = String;
 
 pub enum EmojiListResponse {
     Success(EmojiListSuccess),
-    Error(EmojiListError),
+    Error(EmojiError),
 }
 
 #[derive(Deserialize)]
-pub struct EmojiListError {
+pub struct EmojiError {
     pub ok: bool,
     pub error: String,
 }
