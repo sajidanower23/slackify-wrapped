@@ -7,6 +7,7 @@ pub mod slack;
 
 mod features {
     pub mod emoji_contributor;
+    pub mod favourite_reaction;
 }
 
 #[get("/health")]
@@ -25,4 +26,5 @@ fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![version, health])
         .mount("/", features::emoji_contributor::routes())
+        .mount("/", features::favourite_reaction::routes())
 }
