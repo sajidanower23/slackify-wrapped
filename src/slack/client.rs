@@ -1,4 +1,4 @@
-use super::emoji::EmojiAPI;
+use super::{emoji::EmojiAPI, reactions::ReactionsApi};
 
 pub struct SlackClient {
     pub token: String,
@@ -15,6 +15,13 @@ impl SlackClient {
 
     pub fn emoji(&self) -> EmojiAPI {
         EmojiAPI {
+            client: self.client.clone(),
+            token: self.token.clone(),
+        }
+    }
+
+    pub fn reactions(&self) -> ReactionsApi {
+        ReactionsApi {
             client: self.client.clone(),
             token: self.token.clone(),
         }
