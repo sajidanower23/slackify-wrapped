@@ -9,7 +9,6 @@ pub async fn emoji_contributor_route() -> &'static str {
     let token = env::var("SLACK_TOKEN").expect("Please set SLACK_TOKEN");
     let slack_client = SlackClient::new(&token);
     let params = Some(EmojiListParams {
-        pretty: 1,
         include_categories: false,
     });
     let emoji_list_response = slack_client.emoji().list(params).await;
