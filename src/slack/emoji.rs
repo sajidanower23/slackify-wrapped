@@ -6,14 +6,12 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 pub struct EmojiListParams {
-    pub pretty: i8,
     pub include_categories: bool,
 }
 
 impl EmojiListParams {
     pub fn new_default() -> Self {
         Self {
-            pretty: 1,
             include_categories: false,
         }
     }
@@ -30,7 +28,6 @@ impl EmojiAPI {
         let mut url = Url::parse(URL).expect("Unable to parse URL");
         let params = params.unwrap_or(EmojiListParams::new_default());
         url.query_pairs_mut()
-            .append_pair("pretty", &params.pretty.to_string())
             .append_pair("include_categories", &params.include_categories.to_string());
 
         let response = self
