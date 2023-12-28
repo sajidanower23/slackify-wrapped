@@ -336,7 +336,21 @@ pub struct ReactionsListParams {
     pub user: Option<String>,
 }
 
-#[derive(Deserialize)]
+impl Default for ReactionsListParams {
+    fn default() -> Self {
+        Self {
+            count: None,
+            cursor: None,
+            full: None,
+            limit: None,
+            page: None,
+            team_id: None,
+            user: None,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
 pub enum ReactionsListItem {
     ReactionsListMessageItem {
         r#type: String,
