@@ -202,7 +202,7 @@ impl ReactionsApi {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsError {
     pub ok: bool,
     pub error: String,
@@ -219,7 +219,7 @@ pub enum ReactionsAddResponse {
     Error(ReactionsError),
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsAddSuccess {
     pub ok: bool,
 }
@@ -232,25 +232,25 @@ pub struct ReactionsGetParams {
     pub timestamp: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Reaction {
     pub name: String,
     pub users: Vec<String>,
     pub count: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct MessageData {
     pub r#type: String,
     pub text: String,
     pub user: String,
     pub ts: String,
-    pub team: String,
+    pub team: Option<String>,
     pub reactions: Vec<Reaction>,
     pub permalink: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct FileData {
     pub id: String,
     pub created: i32,
@@ -292,7 +292,7 @@ pub struct FileData {
     pub file_access: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsGetMessage {
     pub ok: bool,
     pub r#type: String,
@@ -300,7 +300,7 @@ pub struct ReactionsGetMessage {
     pub channel: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub enum ReactionsGetSuccess {
     ReactionsGetMessage {
         ok: bool,
@@ -354,7 +354,7 @@ pub enum ReactionsListItem {
     },
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsListResponseMetadata {
     pub next_cursor: String,
 }
@@ -367,7 +367,7 @@ impl Default for ReactionsListResponseMetadata {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsListSuccess {
     pub ok: bool,
     pub items: Vec<ReactionsListItem>,
