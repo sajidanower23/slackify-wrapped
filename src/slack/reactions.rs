@@ -104,6 +104,108 @@ impl ReactionsApi {
             Err(error) => Err(error),
         };
     }
+
+    pub async fn list(&self, params: ReactionsListParams) -> Result<ReactionsListResponse, Error> {
+        const URL: &str = "https://slack.com/api/reactions.list";
+        let mut url = Url::parse(URL).expect("Unable to parse URL");
+        let mut add_param = |name: &str, value: &Option<String>| {
+            if let Some(val) = value {
+                url.query_pairs_mut().append_pair(name, val);
+            }
+        };
+
+        add_param("count", &params.count.map(|v| v.to_string()));
+        add_param("cursor", &params.cursor);
+        add_param("full", &params.full.map(|v| v.to_string()));
+        add_param("limit", &params.limit.map(|v| v.to_string()));
+        add_param("page", &params.page.map(|v| v.to_string()));
+        add_param("team_id", &params.team_id);
+        add_param("user", &params.user);
+
+        let response = self
+            .client
+            .get(url.as_ref())
+            .header("Authorization", format!("Bearer {}", self.token))
+            .send()
+            .await?;
+
+        return match response.error_for_status() {
+            Ok(response) => response.json::<Value>().await.map(|value| {
+                match value.get("ok").unwrap().as_bool().unwrap() {
+                    false => ReactionsListResponse::Error(serde_json::from_value(value).unwrap()),
+                    true => {
+                        let items = value.get("items").unwrap().as_array().unwrap();
+                        let mut reactions_list_items = Vec::new();
+                        for item in items {
+                            let item_type = item.get("type").unwrap().as_str().unwrap();
+                            match item_type {
+                                "message" => {
+                                    reactions_list_items.push(
+                                        ReactionsListItem::ReactionsListMessageItem {
+                                            r#type: item_type.to_string(),
+                                            channel: item
+                                                .get("channel")
+                                                .unwrap()
+                                                .as_str()
+                                                .unwrap()
+                                                .to_string(),
+                                            message: serde_json::from_value(
+                                                item.get("message").unwrap().clone(),
+                                            )
+                                            .unwrap(),
+                                        },
+                                    );
+                                }
+                                "file" => {
+                                    reactions_list_items.push(
+                                        ReactionsListItem::ReactionsListFileItem {
+                                            r#type: item_type.to_string(),
+                                            file: serde_json::from_value(
+                                                item.get("file").unwrap().clone(),
+                                            )
+                                            .unwrap(),
+                                        },
+                                    );
+                                }
+                                "file_comment" => {
+                                    reactions_list_items.push(
+                                        ReactionsListItem::ReactionsListFileCommentItem {
+                                            r#type: item_type.to_string(),
+                                            file: serde_json::from_value(
+                                                item.get("file").unwrap().clone(),
+                                            )
+                                            .unwrap(),
+                                            comment: item.get("comment").unwrap().clone(),
+                                        },
+                                    );
+                                }
+                                unexpected_type => {
+                                    panic!("Unexpected item type: {}", unexpected_type)
+                                }
+                            }
+                        }
+                        ReactionsListResponse::Success(ReactionsListSuccess {
+                            ok: true,
+                            items: reactions_list_items,
+                            response_metadata: match serde_json::from_value(
+                                value.get("response_metadata").unwrap().clone(),
+                            ) {
+                                Ok(metadata) => metadata,
+                                Err(_) => ReactionsListResponseMetadata::default(),
+                            },
+                        })
+                    }
+                }
+            }),
+            Err(error) => Err(error),
+        };
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ReactionsError {
+    pub ok: bool,
+    pub error: String,
 }
 
 pub struct ReactionsAddParams {
@@ -117,7 +219,7 @@ pub enum ReactionsAddResponse {
     Error(ReactionsError),
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsAddSuccess {
     pub ok: bool,
 }
@@ -130,25 +232,25 @@ pub struct ReactionsGetParams {
     pub timestamp: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Reaction {
     pub name: String,
     pub users: Vec<String>,
     pub count: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct MessageData {
     pub r#type: String,
     pub text: String,
     pub user: String,
     pub ts: String,
-    pub team: String,
+    pub team: Option<String>,
     pub reactions: Vec<Reaction>,
     pub permalink: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct FileData {
     pub id: String,
     pub created: i32,
@@ -190,7 +292,7 @@ pub struct FileData {
     pub file_access: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ReactionsGetMessage {
     pub ok: bool,
     pub r#type: String,
@@ -198,7 +300,7 @@ pub struct ReactionsGetMessage {
     pub channel: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub enum ReactionsGetSuccess {
     ReactionsGetMessage {
         ok: bool,
@@ -224,8 +326,69 @@ pub enum ReactionsGetResponse {
     Error(ReactionsError),
 }
 
-#[derive(Deserialize)]
-pub struct ReactionsError {
+pub struct ReactionsListParams {
+    pub count: Option<i32>,
+    pub cursor: Option<String>,
+    pub full: Option<bool>,
+    pub limit: Option<i32>,
+    pub page: Option<i32>,
+    pub team_id: Option<String>, // Only relevant for org_level apps
+    pub user: Option<String>,
+}
+
+impl Default for ReactionsListParams {
+    fn default() -> Self {
+        Self {
+            count: None,
+            cursor: None,
+            full: None,
+            limit: None,
+            page: None,
+            team_id: None,
+            user: None,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub enum ReactionsListItem {
+    ReactionsListMessageItem {
+        r#type: String,
+        channel: String,
+        message: MessageData,
+    },
+    ReactionsListFileItem {
+        r#type: String,
+        file: FileData,
+    },
+    ReactionsListFileCommentItem {
+        r#type: String,
+        file: FileData,
+        comment: Value,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ReactionsListResponseMetadata {
+    pub next_cursor: String,
+}
+
+impl Default for ReactionsListResponseMetadata {
+    fn default() -> Self {
+        Self {
+            next_cursor: "".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ReactionsListSuccess {
     pub ok: bool,
-    pub error: String,
+    pub items: Vec<ReactionsListItem>,
+    pub response_metadata: ReactionsListResponseMetadata,
+}
+
+pub enum ReactionsListResponse {
+    Success(ReactionsListSuccess),
+    Error(ReactionsError),
 }
