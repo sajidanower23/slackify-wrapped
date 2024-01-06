@@ -1,3 +1,4 @@
+use crate::slack::util::add_param_to_url;
 use reqwest::Client;
 use reqwest::Error;
 use reqwest::Url;
@@ -11,12 +12,6 @@ pub struct ReactionsApi {
 }
 
 impl ReactionsApi {
-    fn add_param_to_url(&self, url: &mut Url, name: &str, value: &Option<String>) {
-        if let Some(val) = value {
-            url.query_pairs_mut().append_pair(name, val);
-        }
-    }
-
     pub async fn add(&self, params: ReactionsAddParams) -> Result<ReactionsAddResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.add";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
@@ -47,11 +42,11 @@ impl ReactionsApi {
         const URL: &str = "https://slack.com/api/reactions.get";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
 
-        self.add_param_to_url(&mut url, "channel", &params.channel);
-        self.add_param_to_url(&mut url, "file", &params.file);
-        self.add_param_to_url(&mut url, "file_comment", &params.file_comment);
-        self.add_param_to_url(&mut url, "full", &params.full.map(|v| v.to_string()));
-        self.add_param_to_url(&mut url, "timestamp", &params.timestamp);
+        add_param_to_url(&mut url, "channel", &params.channel);
+        add_param_to_url(&mut url, "file", &params.file);
+        add_param_to_url(&mut url, "file_comment", &params.file_comment);
+        add_param_to_url(&mut url, "full", &params.full.map(|v| v.to_string()));
+        add_param_to_url(&mut url, "timestamp", &params.timestamp);
 
         let response = self
             .client
@@ -110,13 +105,13 @@ impl ReactionsApi {
         const URL: &str = "https://slack.com/api/reactions.list";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
 
-        self.add_param_to_url(&mut url, "count", &params.count.map(|v| v.to_string()));
-        self.add_param_to_url(&mut url, "cursor", &params.cursor);
-        self.add_param_to_url(&mut url, "full", &params.full.map(|v| v.to_string()));
-        self.add_param_to_url(&mut url, "limit", &params.limit.map(|v| v.to_string()));
-        self.add_param_to_url(&mut url, "page", &params.page.map(|v| v.to_string()));
-        self.add_param_to_url(&mut url, "team_id", &params.team_id);
-        self.add_param_to_url(&mut url, "user", &params.user);
+        add_param_to_url(&mut url, "count", &params.count.map(|v| v.to_string()));
+        add_param_to_url(&mut url, "cursor", &params.cursor);
+        add_param_to_url(&mut url, "full", &params.full.map(|v| v.to_string()));
+        add_param_to_url(&mut url, "limit", &params.limit.map(|v| v.to_string()));
+        add_param_to_url(&mut url, "page", &params.page.map(|v| v.to_string()));
+        add_param_to_url(&mut url, "team_id", &params.team_id);
+        add_param_to_url(&mut url, "user", &params.user);
 
         let response = self
             .client
@@ -204,11 +199,11 @@ impl ReactionsApi {
         const URL: &str = "https://slack.com/api/reactions.remove";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
 
-        self.add_param_to_url(&mut url, "channel", &params.channel);
-        self.add_param_to_url(&mut url, "file", &params.file);
-        self.add_param_to_url(&mut url, "file_comment", &params.file_comment);
-        self.add_param_to_url(&mut url, "name", &Some(params.name));
-        self.add_param_to_url(&mut url, "timestamp", &params.timestamp);
+        add_param_to_url(&mut url, "channel", &params.channel);
+        add_param_to_url(&mut url, "file", &params.file);
+        add_param_to_url(&mut url, "file_comment", &params.file_comment);
+        add_param_to_url(&mut url, "name", &Some(params.name));
+        add_param_to_url(&mut url, "timestamp", &params.timestamp);
 
         let response = self
             .client
