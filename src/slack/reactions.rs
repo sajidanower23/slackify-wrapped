@@ -11,6 +11,12 @@ pub struct ReactionsApi {
 }
 
 impl ReactionsApi {
+    fn add_param_to_url(&self, url: &mut Url, name: &str, value: &Option<String>) {
+        if let Some(val) = value {
+            url.query_pairs_mut().append_pair(name, val);
+        }
+    }
+
     pub async fn add(&self, params: ReactionsAddParams) -> Result<ReactionsAddResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.add";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
@@ -40,17 +46,12 @@ impl ReactionsApi {
     pub async fn get(&self, params: ReactionsGetParams) -> Result<ReactionsGetResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.get";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
-        let mut add_param = |name: &str, value: &Option<String>| {
-            if let Some(val) = value {
-                url.query_pairs_mut().append_pair(name, val);
-            }
-        };
 
-        add_param("channel", &params.channel);
-        add_param("file", &params.file);
-        add_param("file_comment", &params.file_comment);
-        add_param("full", &params.full.map(|v| v.to_string()));
-        add_param("timestamp", &params.timestamp);
+        self.add_param_to_url(&mut url, "channel", &params.channel);
+        self.add_param_to_url(&mut url, "file", &params.file);
+        self.add_param_to_url(&mut url, "file_comment", &params.file_comment);
+        self.add_param_to_url(&mut url, "full", &params.full.map(|v| v.to_string()));
+        self.add_param_to_url(&mut url, "timestamp", &params.timestamp);
 
         let response = self
             .client
@@ -108,19 +109,14 @@ impl ReactionsApi {
     pub async fn list(&self, params: ReactionsListParams) -> Result<ReactionsListResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.list";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
-        let mut add_param = |name: &str, value: &Option<String>| {
-            if let Some(val) = value {
-                url.query_pairs_mut().append_pair(name, val);
-            }
-        };
 
-        add_param("count", &params.count.map(|v| v.to_string()));
-        add_param("cursor", &params.cursor);
-        add_param("full", &params.full.map(|v| v.to_string()));
-        add_param("limit", &params.limit.map(|v| v.to_string()));
-        add_param("page", &params.page.map(|v| v.to_string()));
-        add_param("team_id", &params.team_id);
-        add_param("user", &params.user);
+        self.add_param_to_url(&mut url, "count", &params.count.map(|v| v.to_string()));
+        self.add_param_to_url(&mut url, "cursor", &params.cursor);
+        self.add_param_to_url(&mut url, "full", &params.full.map(|v| v.to_string()));
+        self.add_param_to_url(&mut url, "limit", &params.limit.map(|v| v.to_string()));
+        self.add_param_to_url(&mut url, "page", &params.page.map(|v| v.to_string()));
+        self.add_param_to_url(&mut url, "team_id", &params.team_id);
+        self.add_param_to_url(&mut url, "user", &params.user);
 
         let response = self
             .client
@@ -195,6 +191,39 @@ impl ReactionsApi {
                             },
                         })
                     }
+                }
+            }),
+            Err(error) => Err(error),
+        };
+    }
+
+    pub async fn remove(
+        &self,
+        params: ReactionsRemoveParams,
+    ) -> Result<ReactionsRemoveResponse, Error> {
+        const URL: &str = "https://slack.com/api/reactions.remove";
+        let mut url = Url::parse(URL).expect("Unable to parse URL");
+
+        self.add_param_to_url(&mut url, "channel", &params.channel);
+        self.add_param_to_url(&mut url, "file", &params.file);
+        self.add_param_to_url(&mut url, "file_comment", &params.file_comment);
+        self.add_param_to_url(&mut url, "name", &Some(params.name));
+        self.add_param_to_url(&mut url, "timestamp", &params.timestamp);
+
+        let response = self
+            .client
+            .post(url.as_ref())
+            .header("Authorization", format!("Bearer {}", self.token))
+            .send()
+            .await?;
+
+        return match response.error_for_status() {
+            Ok(response) => response.json::<Value>().await.map(|value| {
+                match value.get("ok").unwrap().as_bool().unwrap() {
+                    true => {
+                        ReactionsRemoveResponse::Success(serde_json::from_value(value).unwrap())
+                    }
+                    false => ReactionsRemoveResponse::Error(serde_json::from_value(value).unwrap()),
                 }
             }),
             Err(error) => Err(error),
@@ -390,5 +419,28 @@ pub struct ReactionsListSuccess {
 
 pub enum ReactionsListResponse {
     Success(ReactionsListSuccess),
+    Error(ReactionsError),
+}
+
+// A valid request will need to contain:
+// - name, and
+// - channel and timestamp, OR
+// - file, OR
+// - file_comment
+pub struct ReactionsRemoveParams {
+    pub name: String,
+    pub channel: Option<String>,
+    pub file: Option<String>,
+    pub file_comment: Option<String>,
+    pub timestamp: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ReactionsRemoveSuccess {
+    pub ok: bool,
+}
+
+pub enum ReactionsRemoveResponse {
+    Success(ReactionsRemoveSuccess),
     Error(ReactionsError),
 }
