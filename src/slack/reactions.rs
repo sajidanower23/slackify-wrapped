@@ -421,3 +421,26 @@ pub enum ReactionsListResponse {
     Success(ReactionsListSuccess),
     Error(ReactionsError),
 }
+
+// A valid request will need to contain:
+// - name, and
+// - channel and timestamp, OR
+// - file, OR
+// - file_comment
+pub struct ReactionsRemoveParams {
+    pub name: String,
+    pub channel: Option<String>,
+    pub file: Option<String>,
+    pub file_comment: Option<String>,
+    pub timestamp: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ReactionsRemoveSuccess {
+    pub ok: bool,
+}
+
+pub enum ReactionsRemoveResponse {
+    Success(ReactionsRemoveSuccess),
+    Error(ReactionsError),
+}
