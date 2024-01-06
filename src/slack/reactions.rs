@@ -196,6 +196,39 @@ impl ReactionsApi {
             Err(error) => Err(error),
         };
     }
+
+    pub async fn remove(
+        &self,
+        params: ReactionsRemoveParams,
+    ) -> Result<ReactionsRemoveResponse, Error> {
+        const URL: &str = "https://slack.com/api/reactions.remove";
+        let mut url = Url::parse(URL).expect("Unable to parse URL");
+
+        self.add_param_to_url(&mut url, "channel", &params.channel);
+        self.add_param_to_url(&mut url, "file", &params.file);
+        self.add_param_to_url(&mut url, "file_comment", &params.file_comment);
+        self.add_param_to_url(&mut url, "name", &Some(params.name));
+        self.add_param_to_url(&mut url, "timestamp", &params.timestamp);
+
+        let response = self
+            .client
+            .post(url.as_ref())
+            .header("Authorization", format!("Bearer {}", self.token))
+            .send()
+            .await?;
+
+        return match response.error_for_status() {
+            Ok(response) => response.json::<Value>().await.map(|value| {
+                match value.get("ok").unwrap().as_bool().unwrap() {
+                    true => {
+                        ReactionsRemoveResponse::Success(serde_json::from_value(value).unwrap())
+                    }
+                    false => ReactionsRemoveResponse::Error(serde_json::from_value(value).unwrap()),
+                }
+            }),
+            Err(error) => Err(error),
+        };
+    }
 }
 
 #[derive(Debug, Deserialize)]
