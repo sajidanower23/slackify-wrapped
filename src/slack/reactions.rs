@@ -12,6 +12,7 @@ pub struct ReactionsApi {
 }
 
 impl ReactionsApi {
+    // https://api.slack.com/methods/reactions.add
     pub async fn add(&self, params: ReactionsAddParams) -> Result<ReactionsAddResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.add";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
@@ -38,6 +39,7 @@ impl ReactionsApi {
         };
     }
 
+    // https://api.slack.com/methods/reactions.get
     pub async fn get(&self, params: ReactionsGetParams) -> Result<ReactionsGetResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.get";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
@@ -101,6 +103,7 @@ impl ReactionsApi {
         };
     }
 
+    // https://api.slack.com/methods/reactions.list
     pub async fn list(&self, params: ReactionsListParams) -> Result<ReactionsListResponse, Error> {
         const URL: &str = "https://slack.com/api/reactions.list";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
@@ -192,6 +195,7 @@ impl ReactionsApi {
         };
     }
 
+    // https://api.slack.com/methods/reactions.remove
     pub async fn remove(
         &self,
         params: ReactionsRemoveParams,
