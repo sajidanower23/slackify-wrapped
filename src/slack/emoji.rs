@@ -1,6 +1,4 @@
-use reqwest::Client;
-use reqwest::Error;
-use reqwest::Url;
+use reqwest::{Client, Error, Url};
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
