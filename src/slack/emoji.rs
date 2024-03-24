@@ -23,6 +23,7 @@ pub struct EmojiAPI {
 }
 
 impl EmojiAPI {
+    // https://api.slack.com/methods/emoji.list
     pub async fn list(&self, params: Option<EmojiListParams>) -> Result<EmojiListResponse, Error> {
         const URL: &str = "https://slack.com/api/emoji.list";
         let mut url = Url::parse(URL).expect("Unable to parse URL");
